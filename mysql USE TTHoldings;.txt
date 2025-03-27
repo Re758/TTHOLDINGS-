@@ -1,0 +1,519 @@
+TT Holdings Employee-Organization Database System
+
+SECTION A
+
+Mapping of EER Diagram to Relational Schema
+
+1. Person Entity → Person Table
+EER Attribute	Mapped Column (SQL)
+PersonID (PK)	PersonID (INT, PK)
+Name	Name (VARCHAR)
+Address	Address (VARCHAR)
+PhoneNumber	Phone (VARCHAR)
+BirthDate	BirthDate (DATE)
+2. Organization Entity → Organization Table
+EER Attribute	Mapped Column (SQL)
+OrganizationID (PK)	OrganizationID (INT, PK)
+Name	Name (VARCHAR)
+Address	Address (VARCHAR)
+PhoneNumber	Phone (VARCHAR)
+BudgetNumber	BudgetNumber (VARCHAR)
+Type	Type (ENUM: 'Internal', 'External')
+3. Employment Relationship → Employment Table
+EER Attribute	Mapped Column (SQL)
+EmploymentID (PK)	EmploymentID (INT, PK)
+PersonID (FK)	PersonID (INT, FK → Person)
+OrganizationID (FK)	OrganizationID (INT, FK → Organization)
+EmploymentDate	EmploymentDate (DATE)
+TerminationDate	TerminationDate (DATE)
+Bonus	Bonus (DECIMAL)
+EmploymentType	Type (ENUM: 'Permanent', 'Part-Time')
+ExtraBonus	ExtraBonus (DECIMAL)
+ExtraHours	ExtraHours (INT)
+4. Position Entity → Position Table
+EER Attribute	Mapped Column (SQL)
+PositionID (PK)	PositionID (INT, PK)
+EmploymentID (FK)	EmploymentID (INT, FK → Employment)
+Title	Title (VARCHAR)
+StartDate	StartDate (DATE)
+TerminationDate	TerminationDate (DATE)
+Salary	Salary (DECIMAL)
+ResponsibleOrgID (FK)	ResponsibleOrganizationID (INT, FK → Organization)
+5. Specializations (Permanent & Part-Time Employees)
+Subclass	Table	Columns
+PermanentEmployee	PermanentEmployee	EmploymentID (PK, FK), ExtraBonus, Credit
+PartTimeEmployee	PartTimeEmployee	EmploymentID (PK, FK), ExtraHours
+
+SECTION B
+
+TT Holdings Employee-Organization Database System
+
+mysql> USE TTHoldings;
+
+          CREATING TABLES(Person,Organisation,Employment,Parttimeeployees,Permanentemployees,Poition) 
+mysql> CREATE TABLE Person (
+    ->     PersonID INT PRIMARY KEY,
+    ->     Name VARCHAR(100),
+    ->     Address VARCHAR(255),
+    ->     Phone VARCHAR(15),
+    ->     BirthDate DATE
+    -> );
+Query OK, 0 rows affected (0.53 sec)
+
+mysql>
+mysql>
+mysql> CREATE TABLE Organization (
+    ->     OrganizationID INT PRIMARY KEY,
+    ->     Name VARCHAR(100),
+    ->     Address VARCHAR(255),
+    ->     Phone VARCHAR(15),
+    ->     BudgetNumber VARCHAR(50),
+    ->     Type ENUM('Internal', 'External')
+    -> );
+Query OK, 0 rows affected (0.61 sec)
+
+mysql>
+mysql> CREATE TABLE Employment (
+    ->     EmploymentID INT PRIMARY KEY,
+    ->     PersonID INT,
+    ->     OrganizationID INT,
+    ->     EmploymentDate DATE,
+    ->     TerminationDate DATE,
+    ->     Bonus DECIMAL(10, 2),
+    ->     Type ENUM('Permanent', 'Part-Time'),
+    ->     ExtraBonus DECIMAL(10, 2),
+    ->     ExtraHours INT,
+    ->     FOREIGN KEY (PersonID) REFERENCES Person(PersonID),
+    ->     FOREIGN KEY (OrganizationID) REFERENCES Organization(OrganizationID)
+    -> );
+Query OK, 0 rows affected (0.44 sec)
+
+mysql>
+mysql>
+mysql> CREATE TABLE Position (
+    ->     PositionID INT PRIMARY KEY,
+    ->     EmploymentID INT,
+    ->     Title VARCHAR(100),
+    ->     StartDate DATE,
+    ->     TerminationDate DATE,
+    ->     Salary DECIMAL(10, 2),
+    ->     ResponsibleOrganizationID INT,
+    ->     FOREIGN KEY (EmploymentID) REFERENCES Employment(EmploymentID),
+    ->     FOREIGN KEY (ResponsibleOrganizationID) REFERENCES Organization(OrganizationID)
+    -> );
+Query OK, 0 rows affected (0.56 sec)
+
+mysql> CREATE TABLE PermanentEmployee (
+    ->     EmploymentID INT PRIMARY KEY,
+    ->     ExtraBonus DECIMAL(10, 2),
+    ->     Credit DECIMAL(10, 2),
+    ->     FOREIGN KEY (EmploymentID) REFERENCES Employment(EmploymentID)
+    -> );
+Query OK, 0 rows affected (0.76 sec)
+
+mysql> CREATE TABLE PartTimeEmployee (
+    ->     EmploymentID INT PRIMARY KEY,
+    ->     ExtraHours INT,
+    ->     FOREIGN KEY (EmploymentID) REFERENCES Employment(EmploymentID)
+    -> );
+Query OK, 0 rows affected (0.40 sec)
+
+SECTION C
+
+INSERT IN TO TABLES
+
+mysql>
+mysql> INSERT INTO Person (PersonID, Name, Address, Phone, BirthDate)
+    -> VALUES
+    -> (1, 'Walter', '900 MFT', '51491234', '2003-09-18'),
+    -> (2, 'Refiloe', '100 Maseru', '51499322', '2005-05-15'),
+    -> (3, 'MPho', '900 MFT', '56149101', '2005-10-20'),
+    -> (4, 'Sootho', '321 Tsoelike', '56501212', '2005-03-25'),
+    -> (5, 'Litsebe', '800 BothaBothe', '5111111', '2003-07-12'),
+    -> (6, 'Mahlo', '550 Thaba tseka', '501234567', '2009-12-30'),
+    -> (7, 'John', '135 Khoboko', '50667788', '2002-09-05'),
+    -> (8, 'Thabo', '183 Kalichane', '59999900', '2000-11-18'),
+    -> (9, 'Refiloe', '300 Leribe', '51112233', '2000-04-22'),
+    -> (10, 'Mpho', '300 Leribe', '56474455', '1999-08-14');
+Query OK, 10 rows affected (0.10 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Organization (OrganizationID, Name, Address, Phone, BudgetNumber, Type)
+    -> VALUES
+    -> (1, 'TT Holdings', '456 MASERU', '5555678', 'BUDGET001', 'Internal'),
+
+    -> (2, 'Lomkokwing', '02 MAIN CAMPUS', '56565656', 'BUDGET002', 'External'),
+    -> (3, 'NUL', '123 Roma', '555-1122', 'BUDGET003', 'Internal'),
+    -> (4, 'BOTHO', '321 Abia', '555-3344', 'BUDGET004', 'External'),
+    -> (5, 'LCE', '033 Mohalitoe', '555-5566', 'BUDGET005', 'Internal'),
+    -> (6, 'TECH SOLUTIONS', '987 Innovation ', '555-7788', 'BUDGET006', 'External'),
+    -> (7, 'Health Care', '135 bophelo boi-science', '555-9900', 'BUDGET007', 'Internal'),
+    -> (8, 'Finance ', '246 limkokwing', '555-2233', 'BUDGET008', 'External'),
+    -> (9, 'EDUCATION DEP', '022 LakeSide', '555-4455', 'BUDGET009', 'Internal'),
+    -> (10, 'WALTER TEAM', '011 rsa ', '555-6677', 'BUDGET010', 'External');
+
+Query OK, 10 rows affected (0.07 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Employment (EmploymentID, PersonID, OrganizationID, EmploymentDate, TerminationDate, Bonus, Type, ExtraBonus, ExtraHours)
+    -> VALUES
+    -> (1, 1, 1, '2020-01-01', NULL, 5000.00, 'Permanent', 1000.00, NULL),
+    -> (2, 2, 2, '2019-05-15', '2024-06-14', 3000.00, 'Part-Time', NULL, 20),
+    -> (3, 3, 3, '2018-10-20', NULL, 4000.00, 'Permanent', 1500.00, NULL),
+    -> (4, 4, 4, '2017-03-25', NULL, 2000.00, 'Part-Time', NULL, 15),
+    -> (5, 5, 5, '2016-07-12', '2020-04-01', 6000.00, 'Permanent', 2000.00, NULL),
+    -> (6, 6, 6, '2015-12-30', NULL, 2500.00, 'Part-Time', NULL, 10),
+    -> (7, 7, 7, '2014-09-05', NULL, 5500.00, 'Permanent', 1200.00, NULL),
+    -> (8, 8, 8, '2013-11-18', NULL, 3500.00, 'Part-Time', NULL, 25),
+    -> (9, 9, 9, '2012-04-22', '2014-04-07', 4500.00, 'Permanent', 1300.00, NULL),
+    -> (10, 10, 10, '2011-08-14', NULL, 1500.00, 'Part-Time', NULL, 30);
+Query OK, 10 rows affected (0.07 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Position (PositionID, EmploymentID, Title, StartDate, TerminationDate, Salary, ResponsibleOrganizationID)
+    -> VALUES
+    -> (1, 1, 'Manager', '2020-01-01', NULL, 75000.00, 1),
+    -> (2, 2, 'Analyst', '2019-05-15', '2024-06-14', 50000.00, 2),
+    -> (3, 3, 'Developer', '2018-10-20', NULL, 60000.00, 3),
+    -> (4, 4, 'Consultant', '2017-03-25', NULL, 45000.00, 4),
+    -> (5, 5, 'Director', '2016-07-12', '2020-04-01', 80000.00, 5),
+    -> (6, 6, 'Designer', '2015-12-30', NULL, 55000.00, 6),
+    -> (7, 7, 'Engineer', '2014-09-05', NULL, 70000.00, 7),
+    -> (8, 8, 'Advisor', '2013-11-18', NULL, 48000.00, 8),
+    -> (9, 9, 'Architect', '2012-04-22', '2014-04-07', 65000.00, 9),
+    -> (10, 10, 'Specialist', '2011-08-14', NULL, 40000.00, 10);
+Query OK, 10 rows affected (0.08 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+INSERT INTO PermanentEmployee (EmploymentID, ExtraBonus, Credit) VALUES
+(1, 1000.00, 500.00),  -- Walter at TT Holdings
+(3, 1500.00, 750.00),  -- MPho at NUL
+(5, 2000.00, 1000.00), -- Litsebe at LCE
+(7, 1200.00, 600.00),  -- John at Health Care
+(9, 1300.00, 650.00);  -- Refiloe at EDUCATION DEP
+
+INSERT INTO PartTimeEmployee (EmploymentID, ExtraHours) VALUES
+(2, 20),  -- Refiloe at Lomkokwing
+(4, 15),  -- Sootho at BOTHO
+(6, 10),  -- Mahlo at TECH SOLUTIONS
+(8, 25),  -- Thabo at Finance
+(10, 30); -- Mpho at WALTER TEAM
+
+ SECTION D
+
+CREATING VIEWS
+
+mysql> CREATE VIEW PermanentEmployees AS
+    -> SELECT * FROM Employment WHERE Type = 'Permanent';
+Query OK, 0 rows affected (0.14 sec)
+
+mysql> CREATE VIEW PartTimeEmployees AS
+    -> SELECT * FROM Employment WHERE Type = 'Part-Time';
+Query OK, 0 rows affected (0.13 sec)
+
+mysql> CREATE VIEW InternalOrganizations AS
+    -> SELECT * FROM Organization WHERE Type = 'Internal';
+Query OK, 0 rows affected (0.13 sec)
+
+mysql>
+mysql> CREATE VIEW ExternalOrganizations AS
+    -> SELECT * FROM Organization WHERE Type = 'External';
+Query OK, 0 rows affected (0.12 sec)
+
+mysql> CREATE VIEW HighSalaryPositions AS
+    -> SELECT * FROM Position WHERE Salary > 60000;
+Query OK, 0 rows affected (0.17 sec)
+
+mysql> CREATE VIEW ActivePositions AS
+    -> SELECT * FROM Position WHERE TerminationDate IS NULL;
+Query OK, 0 rows affected (0.15 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE AddEmployee(
+    ->     IN p_PersonID INT,
+    ->     IN p_OrganizationID INT,
+    ->     IN p_EmploymentDate DATE,
+    ->     IN p_TerminationDate DATE,
+    ->     IN p_Bonus DECIMAL(10,2),
+    ->     IN p_Type ENUM('Permanent', 'Part-Time'),
+    ->     IN p_ExtraBonus DECIMAL(10,2),
+    ->     IN p_ExtraHours INT
+    -> )
+mysql> CREATE PROCEDURE UpdateEmployeeBonus(
+    ->     IN p_EmploymentID INT,
+    ->     IN p_NewBonus DECIMAL(10,2)
+    -> )
+    -> BEGIN
+    ->     UPDATE Employment
+    ->     SET Bonus = p_NewBonus
+    ->     WHERE EmploymentID = p_EmploymentID;
+    -> END$$
+Query OK, 0 rows affected (0.11 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql>
+mysql> CALL UpdateEmployeeBonus(3, 4500.00);
+Query OK, 1 row affected (0.24 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE RemoveEmployee(
+    ->     IN p_EmploymentID INT
+    -> )
+    -> BEGIN
+    ->     DELETE FROM Employment WHERE EmploymentID = p_EmploymentID;
+    -> END$$
+
+    -> BEGIN
+    ->     INSERT INTO Employment (PersonID, OrganizationID, EmploymentDate, TerminationDate, Bonus, Type, ExtraBonus, ExtraHours)
+    ->     VALUES (p_PersonID, p_OrganizationID, p_EmploymentDate, p_TerminationDate, p_Bonus, p_Type, p_ExtraBonus, p_ExtraHours);
+    -> END$$
+Query OK, 0 rows affected (3.61 sec)
+
+CREATING TRIGGER
+
+mysql> CREATE TRIGGER BeforeDeletePerson
+    -> BEFORE DELETE ON Person
+    -> FOR EACH ROW
+    -> INSERT INTO PersonAudit (PersonID, Action, Timestamp)
+    -> VALUES (OLD.PersonID, 'DELETE', NOW());
+Query OK, 0 rows affected (0.10 sec)
+
+mysql>
+mysql> CREATE TRIGGER BeforeDeleteEmployment
+    -> BEFORE DELETE ON Employment
+    -> FOR EACH ROW
+    -> INSERT INTO EmploymentAudit (EmploymentID, Action, Timestamp)
+    -> VALUES (OLD.EmploymentID, 'DELETE', NOW());
+Query OK, 0 rows affected (0.09 sec)
+
+mysql> CREATE TRIGGER AfterUpdatePosition
+    -> AFTER UPDATE ON Position
+    -> FOR EACH ROW
+    -> INSERT INTO PositionAudit (PositionID, Action, Timestamp)
+    -> VALUES (OLD.PositionID, 'UPDATE', NOW());
+Query OK, 0 rows affected (0.18 sec)
+
+mysql>
+mysql> CREATE TRIGGER AfterUpdateOrganization
+    -> AFTER UPDATE ON Organization
+    -> FOR EACH ROW
+    -> INSERT INTO OrganizationAudit (OrganizationID, Action, Timestamp)
+    -> VALUES (OLD.OrganizationID, 'UPDATE', NOW());
+Query OK, 0 rows affected (0.12 sec)
+
+mysql> CREATE TRIGGER BeforeInsertPosition
+    -> BEFORE INSERT ON Position
+    -> FOR EACH ROW
+    -> SET NEW.Salary = NEW.Salary * 1.1;
+Query OK, 0 rows affected (0.20 sec)
+
+mysql>
+mysql> CREATE TRIGGER BeforeInsertEmployment
+    -> BEFORE INSERT ON Employment
+    -> FOR EACH ROW
+    -> SET NEW.Bonus = NEW.Bonus + 500;
+Query OK, 0 rows affected (0.20 sec)
+
+
+mysql> CREATE FUNCTION TotalBonus(PersonID INT)
+    -> RETURNS DECIMAL(10, 2)
+    -> READS SQL DATA
+    -> BEGIN
+    ->     DECLARE total DECIMAL(10, 2);
+    ->     SELECT SUM(Bonus) INTO total
+    ->     FROM Employment
+    ->     WHERE Employment.PersonID = PersonID;
+    ->     RETURN total;
+    -> END$$
+Query OK, 0 rows affected (0.27 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql>
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE FUNCTION AverageSalary(PositionTitle VARCHAR(100))
+    -> RETURNS DECIMAL(10, 2)
+    -> READS SQL DATA
+    -> BEGIN
+    ->     DECLARE avgSalary DECIMAL(10, 2);
+    ->     SELECT AVG(Salary) INTO avgSalary
+    ->     FROM Position
+    ->     WHERE Position.Title = PositionTitle;
+    ->     RETURN avgSalary;
+    -> END$$
+Query OK, 0 rows affected (0.18 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql>
+
+
+
+TESTING TABLES
+
+mysql> SELECT * FROM PERSON;
++----------+---------+-----------------+-----------+------------+
+| PersonID | Name    | Address         | Phone     | BirthDate  |
++----------+---------+-----------------+-----------+------------+
+|        1 | Walter  | 900 MFT         | 51491234  | 2003-09-18 |
+|        2 | Refiloe | 100 Maseru      | 51499322  | 2005-05-15 |
+|        3 | MPho    | 900 MFT         | 56149101  | 2005-10-20 |
+|        4 | Sootho  | 321 Tsoelike    | 56501212  | 2005-03-25 |
+|        5 | Litsebe | 800 BothaBothe  | 5111111   | 2003-07-12 |
+|        6 | Mahlo   | 550 Thaba tseka | 501234567 | 2009-12-30 |
+|        7 | John    | 135 Khoboko     | 50667788  | 2002-09-05 |
+|        8 | Thabo   | 183 Kalichane   | 59999900  | 2000-11-18 |
+|        9 | Refiloe | 300 Leribe      | 51112233  | 2000-04-22 |
+|       10 | Mpho    | 300 Leribe      | 56474455  | 1999-08-14 |
++----------+---------+-----------------+-----------+------------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT * FROM ORGANIZATION;
++----------------+----------------+-------------------------+----------+--------------+----------+
+| OrganizationID | Name           | Address                 | Phone    | BudgetNumber | Type     |
++----------------+----------------+-------------------------+----------+--------------+----------+
+|              1 | TT Holdings    | 456 MASERU              | 5555678  | BUDGET001    | Internal |
+|              2 | Lomkokwing     | 02 MAIN CAMPUS          | 56565656 | BUDGET002    | External |
+|              3 | NUL            | 123 Roma                | 555-1122 | BUDGET003    | Internal |
+|              4 | BOTHO          | 321 Abia                | 555-3344 | BUDGET004    | External |
+|              5 | LCE            | 033 Mohalitoe           | 555-5566 | BUDGET005    | Internal |
+|              6 | TECH SOLUTIONS | 987 Innovation          | 555-7788 | BUDGET006    | External |
+|              7 | Health Care    | 135 bophelo boi-science | 555-9900 | BUDGET007    | Internal |
+|              8 | Finance        | 246 limkokwing          | 555-2233 | BUDGET008    | External |
+|              9 | EDUCATION DEP  | 022 LakeSide            | 555-4455 | BUDGET009    | Internal |
+|             10 | WALTER TEAM    | 011 rsa                 | 555-6677 | BUDGET010    | External |
++----------------+----------------+-------------------------+----------+--------------+----------+
+10 rows in set (0.00 sec)
+
+mysql> select * from externalorganizations;
++----------------+----------------+-----------------+----------+--------------+----------+
+| OrganizationID | Name           | Address         | Phone    | BudgetNumber | Type     |
++----------------+----------------+-----------------+----------+--------------+----------+
+|              2 | Lomkokwing     | 02 MAIN CAMPUS  | 56565656 | BUDGET002    | External |
+|              4 | BOTHO          | 321 Abia        | 555-3344 | BUDGET004    | External |
+|              6 | TECH SOLUTIONS | 987 Innovation  | 555-7788 | BUDGET006    | External |
+|              8 | Finance        | 246 limkokwing  | 555-2233 | BUDGET008    | External |
+|             10 | WALTER TEAM    | 011 rsa         | 555-6677 | BUDGET010    | External |
++----------------+----------------+-----------------+----------+--------------+----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from internalorganizations;
++----------------+---------------+-------------------------+----------+--------------+----------+
+| OrganizationID | Name          | Address                 | Phone    | BudgetNumber | Type     |
++----------------+---------------+-------------------------+----------+--------------+----------+
+|              1 | TT Holdings   | 456 MASERU              | 5555678  | BUDGET001    | Internal |
+|              3 | NUL           | 123 Roma                | 555-1122 | BUDGET003    | Internal |
+|              5 | LCE           | 033 Mohalitoe           | 555-5566 | BUDGET005    | Internal |
+|              7 | Health Care   | 135 bophelo boi-science | 555-9900 | BUDGET007    | Internal |
+|              9 | EDUCATION DEP | 022 LakeSide            | 555-4455 | BUDGET009    | Internal |
++----------------+---------------+-------------------------+----------+--------------+----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from parttimeemployees;
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+| EmploymentID | PersonID | OrganizationID | EmploymentDate | TerminationDate | Bonus   | Type      | ExtraBonus | ExtraHours |
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+|            2 |        2 |              2 | 2019-05-15     | 2024-06-14      | 3000.00 | Part-Time |       NULL |         20 |
+|            4 |        4 |              4 | 2017-03-25     | NULL            | 2000.00 | Part-Time |       NULL |         15 |
+|            6 |        6 |              6 | 2015-12-30     | NULL            | 2500.00 | Part-Time |       NULL |         10 |
+|            8 |        8 |              8 | 2013-11-18     | NULL            | 3500.00 | Part-Time |       NULL |         25 |
+|           10 |       10 |             10 | 2011-08-14     | NULL            | 1500.00 | Part-Time |       NULL |         30 |
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+5 rows in set (0.00 sec)
+
+mysql> select * from permanentemployees;
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+| EmploymentID | PersonID | OrganizationID | EmploymentDate | TerminationDate | Bonus   | Type      | ExtraBonus | ExtraHours |
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+|            1 |        1 |              1 | 2020-01-01     | NULL            | 5000.00 | Permanent |    1000.00 |       NULL |
+|            3 |        3 |              3 | 2018-10-20     | NULL            | 4500.00 | Permanent |    1500.00 |       NULL |
+|            5 |        5 |              5 | 2016-07-12     | 2020-04-01      | 6000.00 | Permanent |    2000.00 |       NULL |
+|            7 |        7 |              7 | 2014-09-05     | NULL            | 5500.00 | Permanent |    1200.00 |       NULL |
+|            9 |        9 |              9 | 2012-04-22     | 2014-04-07      | 4500.00 | Permanent |    1300.00 |       NULL |
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+5 rows in set (0.00 sec)
+
+
+mysql> SELECT * FROM POSITION;
++------------+--------------+------------+------------+-----------------+----------+---------------------------+
+| PositionID | EmploymentID | Title      | StartDate  | TerminationDate | Salary   | ResponsibleOrganizationID |
++------------+--------------+------------+------------+-----------------+----------+---------------------------+
+|          1 |            1 | Manager    | 2020-01-01 | NULL            | 75000.00 |                         1 |
+|          2 |            2 | Analyst    | 2019-05-15 | 2024-06-14      | 50000.00 |                         2 |
+|          3 |            3 | Developer  | 2018-10-20 | NULL            | 60000.00 |                         3 |
+|          4 |            4 | Consultant | 2017-03-25 | NULL            | 45000.00 |                         4 |
+|          5 |            5 | Director   | 2016-07-12 | 2020-04-01      | 80000.00 |                         5 |
+|          6 |            6 | Designer   | 2015-12-30 | NULL            | 55000.00 |                         6 |
+|          7 |            7 | Engineer   | 2014-09-05 | NULL            | 70000.00 |                         7 |
+|          8 |            8 | Advisor    | 2013-11-18 | NULL            | 48000.00 |                         8 |
+|          9 |            9 | Architect  | 2012-04-22 | 2014-04-07      | 65000.00 |                         9 |
+|         10 |           10 | Specialist | 2011-08-14 | NULL            | 40000.00 |                        10 |
++------------+--------------+------------+------------+-----------------+----------+---------------------------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT * FROM EMPLOYMENT;
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+| EmploymentID | PersonID | OrganizationID | EmploymentDate | TerminationDate | Bonus   | Type      | ExtraBonus | ExtraHours |
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+|            1 |        1 |              1 | 2020-01-01     | NULL            | 5000.00 | Permanent |    1000.00 |       NULL |
+|            2 |        2 |              2 | 2019-05-15     | 2024-06-14      | 3000.00 | Part-Time |       NULL |         20 |
+|            3 |        3 |              3 | 2018-10-20     | NULL            | 4000.00 | Permanent |    1500.00 |       NULL |
+|            4 |        4 |              4 | 2017-03-25     | NULL            | 2000.00 | Part-Time |       NULL |         15 |
+|            5 |        5 |              5 | 2016-07-12     | 2020-04-01      | 6000.00 | Permanent |    2000.00 |       NULL |
+|            6 |        6 |              6 | 2015-12-30     | NULL            | 2500.00 | Part-Time |       NULL |         10 |
+|            7 |        7 |              7 | 2014-09-05     | NULL            | 5500.00 | Permanent |    1200.00 |       NULL |
+|            8 |        8 |              8 | 2013-11-18     | NULL            | 3500.00 | Part-Time |       NULL |         25 |
+|            9 |        9 |              9 | 2012-04-22     | 2014-04-07      | 4500.00 | Permanent |    1300.00 |       NULL |
+|           10 |       10 |             10 | 2011-08-14     | NULL            | 1500.00 | Part-Time |       NULL |         30 |
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT * FROM PERMANENTEMPLOYEES;
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+| EmploymentID | PersonID | OrganizationID | EmploymentDate | TerminationDate | Bonus   | Type      | ExtraBonus | ExtraHours |
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+|            1 |        1 |              1 | 2020-01-01     | NULL            | 5000.00 | Permanent |    1000.00 |       NULL |
+|            3 |        3 |              3 | 2018-10-20     | NULL            | 4000.00 | Permanent |    1500.00 |       NULL |
+|            5 |        5 |              5 | 2016-07-12     | 2020-04-01      | 6000.00 | Permanent |    2000.00 |       NULL |
+|            7 |        7 |              7 | 2014-09-05     | NULL            | 5500.00 | Permanent |    1200.00 |       NULL |
+|            9 |        9 |              9 | 2012-04-22     | 2014-04-07      | 4500.00 | Permanent |    1300.00 |       NULL |
++--------------+----------+----------------+----------------+-----------------+---------+-----------+------------+------------+
+5 rows in set (0.00 sec)
+
+
+TESTING VIEWS
+
+mysql>
+mysql> -- Test TotalBonus function
+mysql> SELECT TotalBonus(1) AS TotalBonusForPerson1;
++----------------------+
+| TotalBonusForPerson1 |
++----------------------+
+|              5000.00 |
++----------------------+
+1 row in set (0.01 sec)
+
+mysql>
+mysql> -- Test AverageSalary function
+mysql> SELECT AverageSalary('Manager') AS AverageSalaryForManager;
+
+
+
+mysql> DELIMITER $$
+mysql>
+
+
+mysql> CREATE USER 'walter'@'localhost' IDENTIFIED BY 'walter';
+Query OK, 0 rows affected (0.11 sec)
+
+mysql> GRANT SELECT ON TTHoldings.* TO 'walter'@'localhost';
+Query OK, 0 rows affected (0.14 sec)
+
+mysql> GRANT ALL PRIVILEGES ON TTHoldings.* TO 'walter'@'localhost';
+Query OK, 0 rows affected (0.05 sec)
+
+
